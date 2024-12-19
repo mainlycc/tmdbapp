@@ -21,51 +21,56 @@ interface MovieDetails {
 }
 
 async function getMovieDetails(id: string): Promise<MovieDetails> {
-  const [movieResponse, creditsResponse, watchProvidersResponse] = await Promise.all([
-    axios.get(`https://api.themoviedb.org/3/movie/${id}`, {
-      params: {
-        api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-        language: 'pl-PL',
-      },
-    }),
-    axios.get(`https://api.themoviedb.org/3/movie/${id}/credits`, {
-      params: {
-        api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-        language: 'pl-PL',
-      },
-    }),
-    axios.get(`https://api.themoviedb.org/3/movie/${id}/watch/providers`, {
-      params: {
-        api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-      },
-    }),
-  ]);
+  try {
+    const [movieResponse, creditsResponse, watchProvidersResponse] = await Promise.all([
+      axios.get(`https://api.themoviedb.org/3/movie/${id}`, {
+        params: {
+          api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+          language: 'pl-PL',
+        },
+      }),
+      axios.get(`https://api.themoviedb.org/3/movie/${id}/credits`, {
+        params: {
+          api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+          language: 'pl-PL',
+        },
+      }),
+      axios.get(`https://api.themoviedb.org/3/movie/${id}/watch/providers`, {
+        params: {
+          api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+        },
+      }),
+    ]);
 
-  const director = creditsResponse.data.crew.find((person: any) => person.job === 'Director');
-  const watchProviders = watchProvidersResponse.data.results.PL || {};
+    const director = creditsResponse.data.crew.find((person: any) => person.job === 'Director');
+    const watchProviders = watchProvidersResponse.data.results.PL || {};
 
-  return {
-    ...movieResponse.data,
-    director: director?.name,
-    watchProviders: {
-      flatrate: watchProviders.flatrate || [],
-      rent: watchProviders.rent || [],
-      buy: watchProviders.buy || [],
-    },
-  };
+    return {
+      ...movieResponse.data,
+      director: director?.name,
+      watchProviders: {
+        flatrate: watchProviders.flatrate || [],
+        rent: watchProviders.rent || [],
+        buy: watchProviders.buy || [],
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching movie details:', error);
+    throw new Error('Failed to fetch movie details.');
+  }
 }
 
 export default async function MoviePage({
   params,
 }: {
-  params: { id: string }
+  params: { id: string };
 }) {
   const movie = await getMovieDetails(params.id);
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-black to-red-950 pt-24 pb-12">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-500/30 via-transparent to-transparent" />
-      
+
       <div className="max-w-4xl mx-auto relative">
         <div className="flex flex-col md:flex-row gap-8">
           <div className="relative w-full md:w-1/3 aspect-[2/3]">
@@ -113,10 +118,9 @@ export default async function MoviePage({
                 </div>
               </div>
 
-              {/* Sekcja platform streamingowych */}
               <div className="mt-6">
                 <h2 className="text-xl font-semibold mb-4">Gdzie obejrzeć</h2>
-                
+
                 {movie.watchProviders?.flatrate?.length ? (
                   <div className="mb-4">
                     <p className="text-gray-400 mb-2">Dostępne w subskrypcji:</p>
@@ -175,7 +179,7 @@ export default async function MoviePage({
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string }
+  params: { id: string };
 }): Promise<Metadata> {
   const movie = await getMovieDetails(params.id);
   return {
