@@ -63,7 +63,7 @@ export function NavMenu() {
             <NavItem href="/quizy">Quizy</NavItem>
             <NavItem href="/kontakt">Kontakt</NavItem>
           </div>
-          <Link href="/auth">
+          <Link href="/auth/login">
             <Button variant="outline" className="bg-red-950/50 text-white border-red-800 hover:bg-red-900/50 flex items-center">
               <UserIcon className="mr-2 h-4 w-4" /> Zaloguj się
             </Button>
