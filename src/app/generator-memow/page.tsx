@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -28,7 +28,7 @@ export default function MemeGenerator() {
     }
   }
 
-  const generateMeme = () => {
+  const generateMeme = useCallback(() => {
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
     if (!canvas || !ctx || !image) return
@@ -58,13 +58,11 @@ export default function MemeGenerator() {
       }
     }
     img.src = image
-  }
+  }, [image, text, textPosition, fontSize, hashtags])
 
   useEffect(() => {
-    if (image) {
-      generateMeme()
-    }
-  }, [image, text, textPosition, fontSize, hashtags])
+    generateMeme();
+  }, [generateMeme]);
 
   const handleSubmit = () => {
     console.log('Meme submitted:', { image, text, textPosition, fontSize, hashtags })

@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useSupabase } from "@/components/SupabaseProvider";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Image from 'next/image';
 
 export function LoginForm({
   className,
