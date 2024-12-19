@@ -1,7 +1,8 @@
+import { CommentSection } from '@/components/comment-section';
 import axios from 'axios';
 import Image from 'next/image';
 
-type MovieDetails = {
+interface MovieDetails {
   id: number;
   title: string;
   overview: string;
@@ -53,7 +54,13 @@ async function getMovieDetails(id: string): Promise<MovieDetails> {
   };
 }
 
-export default async function MoviePage({ params }: { params: { id: string } }) {
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default async function MoviePage({ params }: PageProps) {
   const movie = await getMovieDetails(params.id);
 
   return (
