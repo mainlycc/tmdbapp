@@ -1,189 +1,111 @@
-import { CommentSection } from '@/components/comment-section';
+// app/page.tsx
 import axios from 'axios';
 import Image from 'next/image';
-import { Metadata } from 'next';
+import Link from 'next/link';
 
-interface MovieDetails {
+interface Movie {
   id: number;
   title: string;
-  overview: string;
   poster_path: string;
-  release_date: string;
-  runtime: number;
-  director?: string;
-  vote_average: number;
-  genres: Array<{ id: number; name: string }>;
-  watchProviders?: {
-    flatrate?: Array<{ provider_name: string; logo_path: string }>;
-    rent?: Array<{ provider_name: string; logo_path: string }>;
-    buy?: Array<{ provider_name: string; logo_path: string }>;
-  };
 }
 
-async function getMovieDetails(id: string): Promise<MovieDetails> {
+async function getMovies(timeWindow: string): Promise<Movie[]> {
   try {
-    const [movieResponse, creditsResponse, watchProvidersResponse] = await Promise.all([
-      axios.get(`https://api.themoviedb.org/3/movie/${id}`, {
-        params: {
-          api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-          language: 'pl-PL',
-        },
-      }),
-      axios.get(`https://api.themoviedb.org/3/movie/${id}/credits`, {
-        params: {
-          api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-          language: 'pl-PL',
-        },
-      }),
-      axios.get(`https://api.themoviedb.org/3/movie/${id}/watch/providers`, {
-        params: {
-          api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
-        },
-      }),
-    ]);
+    let endpoint = '';
+    switch (timeWindow) {
+      case 'day':
+        endpoint = 'trending/movie/day';
+        break;
+      case 'week':
+        endpoint = 'trending/movie/week';
+        break;
+      default:
+        endpoint = 'movie/popular';
+    }
 
-    const director = creditsResponse.data.crew.find((person: any) => person.job === 'Director');
-    const watchProviders = watchProvidersResponse.data.results.PL || {};
-
-    return {
-      ...movieResponse.data,
-      director: director?.name,
-      watchProviders: {
-        flatrate: watchProviders.flatrate || [],
-        rent: watchProviders.rent || [],
-        buy: watchProviders.buy || [],
+    const response = await axios.get(`https://api.themoviedb.org/3/${endpoint}`, {
+      params: {
+        api_key: process.env.NEXT_PUBLIC_TMDB_API_KEY,
+        language: 'pl-PL',
       },
-    };
+    });
+    return response.data.results;
   } catch (error) {
-    console.error('Error fetching movie details:', error);
-    throw new Error('Failed to fetch movie details.');
+    console.error('Błąd podczas pobierania danych:', error);
+    return [];
   }
 }
 
-export default async function MoviePage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const movie = await getMovieDetails(params.id);
+interface HomePageProps {
+  searchParams: {
+    period?: string;
+  };
+}
+
+const HomePage = async ({ searchParams }: HomePageProps) => {
+  const period = searchParams.period || 'popular';
+  const movies = await getMovies(period);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-black to-red-950 pt-24 pb-12">
+    <div className="relative min-h-screen">
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-black/90 to-red-800/70" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-500/30 via-transparent to-transparent" />
-
-      <div className="max-w-4xl mx-auto relative">
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="relative w-full md:w-1/3 aspect-[2/3]">
-            <Image
-              src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-              alt={movie.title}
-              fill
-              className="rounded-lg object-cover"
-              sizes="(max-width: 768px) 100vw, 33vw"
-            />
-          </div>
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-4">{movie.title}</h1>
-            <div className="space-y-4">
-              <p className="text-gray-300">{movie.overview}</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-gray-400">Reżyser</p>
-                  <p>{movie.director || 'Brak danych'}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400">Data premiery</p>
-                  <p>{new Date(movie.release_date).toLocaleDateString('pl-PL')}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400">Czas trwania</p>
-                  <p>{movie.runtime} min</p>
-                </div>
-                <div>
-                  <p className="text-gray-400">Ocena</p>
-                  <p>{movie.vote_average.toFixed(1)}/10</p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-gray-400">Gatunki</p>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {movie.genres.map((genre) => (
-                      <span 
-                        key={genre.id}
-                        className="px-3 py-1 bg-red-900/50 rounded-full text-sm"
-                      >
-                        {genre.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <h2 className="text-xl font-semibold mb-4">Gdzie obejrzeć</h2>
-
-                {movie.watchProviders?.flatrate?.length ? (
-                  <div className="mb-4">
-                    <p className="text-gray-400 mb-2">Dostępne w subskrypcji:</p>
-                    <div className="flex gap-4 flex-wrap">
-                      {movie.watchProviders.flatrate.map((provider) => (
-                        <div key={provider.provider_name} className="flex items-center gap-2">
-                          <Image
-                            src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
-                            alt={provider.provider_name}
-                            width={40}
-                            height={40}
-                            className="rounded-lg"
-                          />
-                          <span>{provider.provider_name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
-                {movie.watchProviders?.rent?.length ? (
-                  <div className="mb-4">
-                    <p className="text-gray-400 mb-2">Dostępne do wypożyczenia:</p>
-                    <div className="flex gap-4 flex-wrap">
-                      {movie.watchProviders.rent.map((provider) => (
-                        <div key={provider.provider_name} className="flex items-center gap-2">
-                          <Image
-                            src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
-                            alt={provider.provider_name}
-                            width={40}
-                            height={40}
-                            className="rounded-lg"
-                          />
-                          <span>{provider.provider_name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
-                {!movie.watchProviders?.flatrate?.length && 
-                 !movie.watchProviders?.rent?.length && (
-                  <p className="text-gray-400">
-                    Film obecnie nie jest dostępny na żadnej platformie streamingowej w Polsce.
-                  </p>
-                )}
-              </div>
+      
+      {/* Content */}
+      <div className="relative grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+        <main className="row-start-2 w-full">
+          <div className="flex flex-col items-center mb-10">
+            <h1 className="text-3xl font-bold text-center mb-6">Najpopularniejsze filmy</h1>
+            <div className="flex gap-4">
+              <Link 
+                href="/movies?period=popular" 
+                className={`px-4 py-2 rounded-lg ${period === 'popular' ? 'bg-white text-black' : 'bg-black/50 text-white border border-white/20'}`}
+              >
+                Ogólnie
+              </Link>
+              <Link 
+                href="/movies?period=day" 
+                className={`px-4 py-2 rounded-lg ${period === 'day' ? 'bg-white text-black' : 'bg-black/50 text-white border border-white/20'}`}
+              >
+                Dzisiaj
+              </Link>
+              <Link 
+                href="/movies?period=week" 
+                className={`px-4 py-2 rounded-lg ${period === 'week' ? 'bg-white text-black' : 'bg-black/50 text-white border border-white/20'}`}
+              >
+                W tym tygodniu
+              </Link>
             </div>
           </div>
-        </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            {movies.map((movie) => (
+              <Link 
+                href={`/movies/${movie.id}`}
+                key={movie.id}
+              >
+                <div className="flex flex-col items-center bg-black/50 backdrop-blur-sm border border-white/20 rounded-lg p-4 transition-transform hover:scale-105 hover:border-white/40">
+                  {movie.poster_path && (
+                    <div className="relative w-full aspect-[2/3] mb-4">
+                      <Image
+                        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                        alt={movie.title}
+                        fill
+                        className="rounded-lg object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      />
+                    </div>
+                  )}
+                  <h2 className="text-lg font-semibold text-center">{movie.title}</h2>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </main>
       </div>
     </div>
   );
-}
+};
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { id: string };
-}): Promise<Metadata> {
-  const movie = await getMovieDetails(params.id);
-  return {
-    title: movie.title,
-    description: movie.overview,
-  };
-}
+export default HomePage;
