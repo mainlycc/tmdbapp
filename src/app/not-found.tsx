@@ -15,18 +15,18 @@ export default function NotFoundPage() {
           </h1>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center space-y-4">
             <h2 className="text-2xl font-bold uppercase">Error Page</h2>
-            <p className="text-lg">Sorry, we couldn't find this page</p>
+            <p className="text-lg">Przepraszamy, nie mogliśmy znaleźć tej strony</p>
             <Link href="/">
               <Button 
                 variant="outline" 
                 className="mt-4 border-red-600 text-red-600 hover:bg-red-600 hover:text-white transition-colors"
               >
-                Go Back
+                Wróć
               </Button>
             </Link>
           </div>
           <p className="text-xl mt-32">
-            The page you are looking for doesn't exist or an other error occurred.
+            Strona, której szukasz nie istnieje lub wystąpił inny błąd.
           </p>
         </div>
       </div>

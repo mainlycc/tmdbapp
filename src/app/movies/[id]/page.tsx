@@ -162,12 +162,6 @@ export default async function MoviePage({ params }: { params: { id: string } }) 
             </div>
           </div>
         </div>
-        
-        {/* Sekcja komentarzy */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">Komentarze</h2>
-          
-        </div>
       </div>
     </div>
   );
