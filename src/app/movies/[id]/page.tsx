@@ -1,8 +1,6 @@
 import { CommentSection } from '@/components/comment-section';
 import axios from 'axios';
 import Image from 'next/image';
-
-// Importujemy typy z Next.js
 import { Metadata } from 'next';
 
 interface MovieDetails {
@@ -57,13 +55,11 @@ async function getMovieDetails(id: string): Promise<MovieDetails> {
   };
 }
 
-interface MoviePageProps {
-  params: { id: string };
-}
-
 export default async function MoviePage({
   params,
-}: MoviePageProps) {
+}: {
+  params: { id: string }
+}) {
   const movie = await getMovieDetails(params.id);
   
   return (
@@ -176,8 +172,11 @@ export default async function MoviePage({
   );
 }
 
-// Opcjonalnie, jeśli potrzebujesz metadanych
-export async function generateMetadata({ params }: MoviePageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string }
+}): Promise<Metadata> {
   const movie = await getMovieDetails(params.id);
   return {
     title: movie.title,
