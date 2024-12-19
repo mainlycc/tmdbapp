@@ -54,12 +54,16 @@ async function getMovieDetails(id: string): Promise<MovieDetails> {
   };
 }
 
-type Props = {
-  params: { id: string }
-  searchParams: { [key: string]: string | string[] | undefined }
+// Poprawna definicja typu dla props strony w Next.js 13+
+export interface PageProps {
+  params: { id: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default async function MoviePage({ params }: Props) {
+export default async function MoviePage({
+  params,
+  searchParams,
+}: PageProps) {
   const movie = await getMovieDetails(params.id);
 
   return (
