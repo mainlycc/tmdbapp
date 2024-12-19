@@ -17,7 +17,7 @@ interface MovieDetails {
     rent?: Array<{ provider_name: string; logo_path: string }>;
     buy?: Array<{ provider_name: string; logo_path: string }>;
   };
-};
+}
 
 async function getMovieDetails(id: string): Promise<MovieDetails> {
   const [movieResponse, creditsResponse, watchProvidersResponse] = await Promise.all([
@@ -54,13 +54,12 @@ async function getMovieDetails(id: string): Promise<MovieDetails> {
   };
 }
 
-interface PageProps {
-  params: {
-    id: string;
-  };
+type Props = {
+  params: { id: string }
+  searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export default async function MoviePage({ params }: PageProps) {
+export default async function MoviePage({ params }: Props) {
   const movie = await getMovieDetails(params.id);
 
   return (
