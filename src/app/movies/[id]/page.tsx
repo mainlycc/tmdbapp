@@ -1,8 +1,7 @@
-import { CommentSection } from '@/components/comment-section';
 import axios from 'axios';
 import Image from 'next/image';
 
-interface MovieDetails {
+type MovieDetails = {
   id: number;
   title: string;
   overview: string;
@@ -17,7 +16,7 @@ interface MovieDetails {
     rent?: Array<{ provider_name: string; logo_path: string }>;
     buy?: Array<{ provider_name: string; logo_path: string }>;
   };
-}
+};
 
 async function getMovieDetails(id: string): Promise<MovieDetails> {
   const [movieResponse, creditsResponse, watchProvidersResponse] = await Promise.all([
