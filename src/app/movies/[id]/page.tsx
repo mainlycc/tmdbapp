@@ -2,6 +2,9 @@ import { CommentSection } from '@/components/comment-section';
 import axios from 'axios';
 import Image from 'next/image';
 
+// Importujemy typy z Next.js
+import { Metadata } from 'next';
+
 interface MovieDetails {
   id: number;
   title: string;
@@ -54,17 +57,15 @@ async function getMovieDetails(id: string): Promise<MovieDetails> {
   };
 }
 
-type SearchParams = { [key: string]: string | string[] | undefined };
-
-// Używamy generycznego typu dla parametrów strony
-type Props = {
+interface MoviePageProps {
   params: { id: string };
-  searchParams?: SearchParams;
-};
+}
 
-export default async function MoviePage(props: Props) {
-  const movie = await getMovieDetails(props.params.id);
-
+export default async function MoviePage({
+  params,
+}: MoviePageProps) {
+  const movie = await getMovieDetails(params.id);
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-black to-red-950 pt-24 pb-12">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-500/30 via-transparent to-transparent" />
@@ -173,4 +174,13 @@ export default async function MoviePage(props: Props) {
       </div>
     </div>
   );
+}
+
+// Opcjonalnie, jeśli potrzebujesz metadanych
+export async function generateMetadata({ params }: MoviePageProps): Promise<Metadata> {
+  const movie = await getMovieDetails(params.id);
+  return {
+    title: movie.title,
+    description: movie.overview,
+  };
 }
