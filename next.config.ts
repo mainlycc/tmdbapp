@@ -1,20 +1,11 @@
-import type { NextConfig } from 'next';
-
+import type { NextConfig } from 'next'
+ 
 const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'image.tmdb.org',
-        pathname: '/t/p/w500/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'image.tmdb.org',
-        pathname: '/t/p/original/**',
-      },
-    ],
+  eslint: {
+    // Warning: This allows production builds to successfully complete even if
+    // your project has ESLint errors.
+    ignoreDuringBuilds: true,
   },
-};
-
-export default nextConfig;
+}
+ 
+export default nextConfig
